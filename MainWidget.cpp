@@ -11,60 +11,50 @@
 #include "sphereScene.h"
 #include "Sphere.h"
 
-void getVertex(char *ptr, Vertex &vertex) {
-    ptr += 16;
+void getVertex(char *ptr, Sim3Vertex &vertex) {
+    ptr += 17;
     int index;
     double x;
     double y;
     double z;
-    double q1;
-    double q2;
-    double q3;
-    double q4;
+    double phi1;
+    double phi2;
+    double phi3;
+    double sigma;
 
     sscanf(ptr, "%d %lf %lf %lf %lf %lf %lf %lf",
-           &index, &x, &y, &z, &q2, &q3, &q4, &q1);
+           // &index, &x, &y, &z, &phi1, &phi2, &phi3, &sigma);
+           &index, &phi1, &phi2, &phi3, &x, &y, &z, &sigma);
 
-    Sophus::SE3d se3(Eigen::Quaternion<double>(q1, q2, q3, q4), Eigen::Vector3d(x, y, z));
+    Eigen::Matrix<double, 7, 1> lie;
+    lie << x, y, z, phi1, phi2, phi3, sigma;
 
-    vertex.index = index;
-    vertex.pose = se3.log();
+    vertex[index] = lie;
 }
 
-void getEdge(char *ptr, Edge &edge) {
+void getEdge(char *ptr, Sim3Edge &edge) {
     int index1;
     int index2;
     double x;
     double y;
     double z;
-    double q1;
-    double q2;
-    double q3;
-    double q4;
+    double phi1;
+    double phi2;
+    double phi3;
+    double sigma;
 
-    double h[21];
+    sscanf(ptr + 15, "%lf %lf %lf %lf %lf %lf %lf %d %d ",
+           // &x, &y, &z, &phi1, &phi2, &phi3, &sigma, &index1, &index2);
+           &phi1, &phi2, &phi3, &x, &y, &z, &sigma, &index1, &index2);
 
-    sscanf(ptr + 14, "%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf ",
-           &index1, &index2, &x, &y, &z, &q2, &q3, &q4, &q1,
-           h, h+1, h+2, h+3, h+4, h+5, h+6,
-           h+7, h+8, h+9, h+10, h+11, h+12, h+13,
-           h+14, h+15, h+16, h+17, h+18, h+19, h+20);
+    Eigen::Matrix<double, 7, 1> lie;
+    lie << x, y, z, phi1, phi2, phi3, sigma;
 
-    Sophus::SE3d se3(Eigen::Quaternion<double>(q1, q2, q3, q4), Eigen::Vector3d(x, y, z));
+    edge.j = index1;
+    edge.i = index2;
+    edge.pose = Sophus::Sim3d::exp(lie);
 
-    edge.i = index1;
-    edge.j = index2;
-    edge.pose = se3;
-
-    int k = 0;
-
-    for(int j = 0; j < 6; ++j) {
-        for(int i = j; i < 6; ++i) {
-            edge.infomation(i, j) = edge.infomation(j, i) = h[i + k];
-        }
-
-        k += 5 - j;
-    }
+    edge.infomation = Eigen::Matrix<double, 7, 7>::Identity();
 }
 
 MainWidget::MainWidget(QWidget *parent) :
@@ -113,27 +103,26 @@ void MainWidget::btnInit()
     // QString dataFile = QFileDialog::getOpenFileName(this, "data file");
 
     // std::fstream f(dataFile.toLatin1().data());
-    std::fstream f("sphere_data.g2o");
+    std::fstream f("../data/sim3_sphere_data.g2o");
 
     char *buffer = (char*)malloc(512);
 
     memset(buffer, 0, 512);
     f.getline(buffer, 512);
 
-    const char *vertexSign = "VERTEX_SE3:QUAT";
-    const char *edgeSign = "EDGE_SE3:QUAT";
+    const char *vertexSign = "VERTEX_SIM3:QUAT";
+    const char *edgeSign = "EDGE_SIM3:QUAT";
 
+    Sim3Vertex vertexes;
     while(strlen(buffer) != 0) {
         char *ptr = nullptr;
 
         if((ptr = strstr(buffer, vertexSign)) != nullptr) {
-            Vertex vertex;
-            getVertex(ptr, vertex);
-            sphere->pushVertex(vertex);
+            getVertex(ptr, vertexes);
         }
 
         if((ptr = strstr(buffer, edgeSign)) != NULL) {
-            Edge edge;
+            Sim3Edge edge;
             getEdge(ptr, edge);
             sphere->pushEdge(edge);
         }
@@ -141,6 +130,7 @@ void MainWidget::btnInit()
         memset(buffer, 0, 512);
         f.getline(buffer, 512);
     }
+    sphere->setVertexes(vertexes);
 
     free(buffer);
 
@@ -161,6 +151,3 @@ void MainWidget::btnOptimize()
     update();
     optButton->setDisabled(true);
 }
-
-
-
