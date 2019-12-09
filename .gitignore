@@ -1,19 +1,84 @@
-ballProblem
-build
-build-
-*.pro
-*.pro.user
-*.pro.user.*
-*.pro.user*
-moc_*
-*.o
-MakeFile
-Makefile
-makefile
-*.idea
-*moc
-*idea
-*iml
-*build*
-*debug
+####################### MacOS gitignore ######################
+# General
+.DS_Store
+.AppleDouble
+.LSOverride
 
+# Icon must end with two \r
+Icon
+
+# Thumbnails
+._*
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+####################### C++ gitignore ########################
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+####################### Python gitignore #####################
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+#*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+eggs/
+.eggs/
+lib/
+lib64/
+*.egg-info/
+.installed.cfg
+*.egg
+
+*.swp

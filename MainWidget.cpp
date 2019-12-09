@@ -78,14 +78,14 @@ MainWidget::MainWidget(QWidget *parent) :
     optButton   = new QPushButton;
 
     InitButton->setText("initial");
-    IterSetEdit->setText("50");
+    IterSetEdit->setText("100");
 
     QRegExp regExp2("[0-9]{1,4}");
     QRegExpValidator *pRegExpValidator2 = new QRegExpValidator(regExp2,this);
     IterSetEdit->setValidator(pRegExpValidator2);
 
     optButton->setText("optimize");
-    optButton->setDisabled(true);
+    optButton->setDisabled(false);
 
     mainLayout->addWidget(sphereScene, 0, 0, 3, 3);
     mainLayout->addWidget(IterSetEdit, 3, 0, 1, 1);
@@ -110,9 +110,10 @@ MainWidget::MainWidget(QWidget *parent) :
 
 void MainWidget::btnInit()
 {
-    QString dataFile = QFileDialog::getOpenFileName(this, "data file");
+    // QString dataFile = QFileDialog::getOpenFileName(this, "data file");
 
-    std::fstream f(dataFile.toAscii().data());
+    // std::fstream f(dataFile.toLatin1().data());
+    std::fstream f("sphere_data.g2o");
 
     char *buffer = (char*)malloc(512);
 
@@ -152,10 +153,10 @@ void MainWidget::btnInit()
 void MainWidget::btnOptimize()
 {
     isInit = false;
-    int iter = 50;
+    int iter = 100;
     QString Striter = IterSetEdit->text();
     if(Striter.size())
-        iter = atoi(Striter.toAscii().data());
+        iter = atoi(Striter.toLatin1().data());
     sphere->optimize(iter);
     update();
     optButton->setDisabled(true);

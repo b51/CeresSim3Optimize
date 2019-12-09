@@ -12,6 +12,9 @@ int main(int argc, char *argv[]) {
     MainWidget w;
     w.show();
 
-    return app.exec();
+    app.exec();
+    w.btnInit();
+    w.btnOptimize();
+    return 0;
 }
 
