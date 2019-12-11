@@ -22,8 +22,7 @@ void getVertex(char *ptr, Sim3Vertex &vertex) {
   double sigma;
 
   sscanf(ptr, "%d %lf %lf %lf %lf %lf %lf %lf",
-         // &index, &x, &y, &z, &phi1, &phi2, &phi3, &sigma);
-         &index, &phi1, &phi2, &phi3, &x, &y, &z, &sigma);
+         &index, &x, &y, &z, &phi1, &phi2, &phi3, &sigma);
 
   Eigen::Matrix<double, 7, 1> lie;
   lie << x, y, z, phi1, phi2, phi3, sigma;
@@ -43,8 +42,7 @@ void getEdge(char *ptr, Sim3Edge &edge) {
   double sigma;
 
   sscanf(ptr + 15, "%lf %lf %lf %lf %lf %lf %lf %d %d ",
-         // &x, &y, &z, &phi1, &phi2, &phi3, &sigma, &index1, &index2);
-         &phi1, &phi2, &phi3, &x, &y, &z, &sigma, &index1, &index2);
+         &x, &y, &z, &phi1, &phi2, &phi3, &sigma, &index1, &index2);
 
   Eigen::Matrix<double, 7, 1> lie;
   lie << x, y, z, phi1, phi2, phi3, sigma;
@@ -91,7 +89,6 @@ MainWidget::MainWidget(QWidget *parent) : QWidget(parent) {
 
 void MainWidget::btnInit() {
   QString dataFile = QFileDialog::getOpenFileName(this, "data file");
-
   std::fstream f(dataFile.toLatin1().data());
 
   char *buffer = (char *)malloc(512);

@@ -2,72 +2,71 @@
 #include <stdio.h>
 
 #include <Eigen/Sparse>
-
 #include <ceres/ceres.h>
 
 #include "Sphere.h"
 
 class PoseGraphError : public ceres::SizedCostFunction<7, 7, 7> {
 public:
-  PoseGraphError(const Sophus::Sim3d &Tji,
+  PoseGraphError(const Sophus::Sim3d &Sji,
                  const Eigen::Matrix<double, 7, 7> &information)
-      : Tji_(Tji), sqrt_information_(information) {}
+      : Sji_(Sji) {
+    Eigen::LLT<Eigen::Matrix<double, 7, 7>> llt(information);
+    sqrt_information_ = llt.matrixL();
+  }
 
-  // T_i means world frame in i frame, T_iw
-  virtual bool Evaluate(double const *const *parameters, double *residuals,
-                        double **jacobians) const {
-    Eigen::Map<const Eigen::Matrix<double, 7, 1>> lie_j(*parameters);
-    Eigen::Map<const Eigen::Matrix<double, 7, 1>> lie_i(*(parameters + 1));
+  // Si means world frame in i frame, S_iw
+  virtual bool Evaluate(double const *const *parameters_ptr,
+                        double *residuals_ptr, double **jacobians_ptr) const {
+    Eigen::Map<const Eigen::Matrix<double, 7, 1>> lie_j(*parameters_ptr);
+    Eigen::Map<const Eigen::Matrix<double, 7, 1>> lie_i(*(parameters_ptr + 1));
 
-    Sophus::Sim3d T_i = Sophus::Sim3d::exp(lie_i);
-    Sophus::Sim3d T_j = Sophus::Sim3d::exp(lie_j);
-    Sophus::Sim3d Tij_estimate = T_i * T_j.inverse();
-    Sophus::Sim3d err = Tji_ * Tij_estimate;
-    Eigen::Matrix<double, 7, 1> err_;
-    err_ = err.log();
+    Sophus::Sim3d Si = Sophus::Sim3d::exp(lie_i);
+    Sophus::Sim3d Sj = Sophus::Sim3d::exp(lie_j);
+    Sophus::Sim3d error = Sji_ * Si * Sj.inverse();
+    Eigen::Map<Eigen::Matrix<double, 7, 1>> residuals(residuals_ptr);
+    residuals = error.log();
 
-    Eigen::Matrix<double, 7, 7> Jac_i;
-    Eigen::Matrix<double, 7, 7> Jac_j;
-    Eigen::Matrix<double, 7, 7> Jr = Eigen::Matrix<double, 7, 7>::Zero();
+    if (jacobians_ptr) {
+      Eigen::Matrix<double, 7, 7> Jacobian_i;
+      Eigen::Matrix<double, 7, 7> Jacobian_j;
+      Eigen::Matrix<double, 7, 7> Jr = Eigen::Matrix<double, 7, 7>::Zero();
 
-    Jr.block<3, 3>(0, 0) = Sophus::RxSO3d::hat(err_.tail(4));
-    Jr.block<3, 3>(0, 3) = Sophus::SO3d::hat(err_.head(3));
-    Jr.block<3, 1>(0, 6) = -err_.head(3);
-    Jr.block<3, 3>(3, 3) = Sophus::SO3d::hat(err_.block<3, 1>(3, 0));
-    Eigen::Matrix<double, 7, 7> I = Eigen::Matrix<double, 7, 7>::Identity();
-    Jr.noalias() = sqrt_information_ * (I + 0.5 * Jr + 1.0 / 12. * (Jr * Jr));
+      Jr.block<3, 3>(0, 0) = Sophus::RxSO3d::hat(residuals.tail(4));
+      Jr.block<3, 3>(0, 3) = Sophus::SO3d::hat(residuals.head(3));
+      Jr.block<3, 1>(0, 6) = -residuals.head(3);
+      Jr.block<3, 3>(3, 3) = Sophus::SO3d::hat(residuals.block<3, 1>(3, 0));
+      Eigen::Matrix<double, 7, 7> I = Eigen::Matrix<double, 7, 7>::Identity();
+      Jr = sqrt_information_ * (I + 0.5 * Jr + 1.0 / 12. * (Jr * Jr));
 
-    err_ = sqrt_information_ * err_;
-
-    Jac_i = Jr * T_j.Adj();
-    Jac_j = -Jac_i;
-    int k = 0;
-    for (int i = 0; i < 7; i++) {
-      residuals[i] = err_[i];
-      if (jacobians) {
+      Jacobian_i = Jr * Sj.Adj();
+      Jacobian_j = -Jacobian_i;
+      int k = 0;
+      for (int i = 0; i < 7; i++) {
         for (int j = 0; j < 7; ++j) {
-          if (jacobians[0])
-            jacobians[0][k] = Jac_j(i, j);
-          if (jacobians[1])
-            jacobians[1][k] = Jac_i(i, j);
+          if (jacobians_ptr[0])
+            jacobians_ptr[0][k] = Jacobian_j(i, j);
+          if (jacobians_ptr[1])
+            jacobians_ptr[1][k] = Jacobian_i(i, j);
           k++;
         }
       }
     }
+    residuals = sqrt_information_ * residuals;
     return true;
   }
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   static ceres::CostFunction *
-  Create(const Sophus::Sim3d &Tji,
+  Create(const Sophus::Sim3d &Sji,
          const Eigen::Matrix<double, 7, 7> &sqrt_information) {
-    return new PoseGraphError(Tji, sqrt_information);
+    return new PoseGraphError(Sji, sqrt_information);
   }
 
 private:
-  const Sophus::Sim3d Tji_;
-  const Eigen::Matrix<double, 7, 7> sqrt_information_;
+  const Sophus::Sim3d Sji_;
+  Eigen::Matrix<double, 7, 7> sqrt_information_;
 };
 
 Sphere::Sphere() {}
@@ -82,12 +81,6 @@ public:
   virtual int LocalSize() const { return 7; }
 };
 
-bool Sim3Parameterization::ComputeJacobian(const double *x,
-                                           double *jacobian) const {
-  ceres::MatrixRef(jacobian, 7, 7) = ceres::Matrix::Identity(7, 7);
-  return true;
-}
-
 bool Sim3Parameterization::Plus(const double *x, const double *delta,
                                 double *x_plus_delta) const {
   Eigen::Map<const Eigen::Matrix<double, 7, 1>> lie(x);
@@ -96,6 +89,12 @@ bool Sim3Parameterization::Plus(const double *x, const double *delta,
   Sophus::Sim3d delta_T = Sophus::Sim3d::exp(delta_lie);
   Eigen::Map<Eigen::Matrix<double, 7, 1>> x_plus_delta_lie(x_plus_delta);
   x_plus_delta_lie = (T * delta_T).log();
+  return true;
+}
+
+bool Sim3Parameterization::ComputeJacobian(const double *x,
+                                           double *jacobian) const {
+  ceres::MatrixRef(jacobian, 7, 7) = ceres::Matrix::Identity(7, 7);
   return true;
 }
 
@@ -116,11 +115,12 @@ bool Sphere::optimize(int iter_) {
     problem.SetParameterization(it.second.data(), new Sim3Parameterization());
   }
 
-  problem.SetParameterBlockConstant(vertexes[58].data());
+  problem.SetParameterBlockConstant(vertexes[70].data());
 
   ceres::Solver::Options options;
   options.max_num_iterations = iter_;
   options.minimizer_progress_to_stdout = true;
+  options.function_tolerance = 1e-16;
   // options.linear_solver_type = ceres::SPARSE_NORMAL_CHOLESKY;
   // options.dynamic_sparsity = true;
   // options.sparse_linear_algebra_library_type = ceres::SUITE_SPARSE;
