@@ -26,9 +26,8 @@ $ make -j
 $ ./CeresSim3Optimize
 click initial and choose sim3_sphere_data.g2o in data folder, then optimize
 ```
-
+## **!!! Chrome extension [TeX All the Things](https://chrome.google.com/webstore/detail/tex-all-the-things/cbimabofgmfdkicghcadidpemeenbffn) is neccessary for Latex below display !!!**
 ## Error and Jacobian calculation of sim(3)
-**!!! Chrome extension [TeX All the Things](https://chrome.google.com/webstore/detail/tex-all-the-things/cbimabofgmfdkicghcadidpemeenbffn) is neccessary for Latex below display !!!**
 
 ### Some neccessary equations before Jacobian calculation
 **1. With the property of Lie Algebra Adjoint, [Reference](https://blog.csdn.net/heyijia0327/article/details/51773578)**
@@ -56,6 +55,7 @@ $\hspace{3cm}\mathbf{J_r(\xi)^{-1} = \sum_{n = 0}^{\infty} \frac{B_n}{n!} (-\xi^
 With$\hspace{1cm}B_0 = 1, B_1 = -\frac{1}{2}, B_2 = \frac{1}{6}, B_3 = 0, B_4 = -\frac{1}{30}\dots$, $\hspace{5mm}\mathbf{\xi^{\lambda} = adj(\xi)}$, $\hspace{5mm}$ is adjoint matrix of $\xi$
 
 **3. Adjoint Matrix of sim(3)**
+
 a) Main property of adjoint matrix on Lie Algebras, [Reference: LIE GROUPS AND LIE ALGEBRAS, 1.6](http://www.math.jhu.edu/~fspinu/423/7.pdf)
 $$\mathbf{[x, y] = adj(x)y}$$
 
