@@ -133,6 +133,7 @@ void MainWidget::btnOptimize() {
   if (Striter.size())
     iter = atoi(Striter.toLatin1().data());
   optimizer_->optimize(iter);
+  // optimizer_->LocalBAOptimize(iter);
   update();
   optButton->setDisabled(true);
 }

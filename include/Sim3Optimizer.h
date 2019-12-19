@@ -1,8 +1,9 @@
-#ifndef SPHERE_H
-#define SPHERE_H
+#ifndef SIM3_OPTIMIZE_H_
+#define SIM3_OPTIMIZE_H_
 
 #include <iostream>
 #include <vector>
+#include <sophus/sim3.hpp>
 
 #include "DataStruct.h"
 
@@ -23,9 +24,26 @@ public:
 
   virtual bool optimize(int iter = 50);
 
-private:
+  virtual bool LocalBAOptimize(int iter = 50);
+
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+ private:
+  void ErrorAndJacobianCalculation(
+      const Sophus::Sim3d& Sji, const Eigen::Matrix<double, 7, 7>& information,
+      const Eigen::Matrix<double, 7, 1>& lie_i,
+      const Eigen::Matrix<double, 7, 1>& lie_j,
+      Eigen::Matrix<double, 7, 1>& residuals,
+      Eigen::Matrix<double, 7, 7>& Jacobian_i,
+      Eigen::Matrix<double, 7, 7>& Jacobian_j);
+
+  double IterateOnce(Eigen::Matrix<double, Eigen::Dynamic, 1>& delta_sim);
+
   Sim3Vertex vertexes;
   std::vector<Sim3Edge> edges;
+
+  std::map<int, int> vertexes_remapped;
+  std::map<int, int> inversed_vertexes_remapped;
 };
 
 #endif // SPHERE_H

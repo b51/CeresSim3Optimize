@@ -2,7 +2,6 @@
 #define DATASTRUCT_H
 
 #include <Eigen/Dense>
-#include <sophus/se3.hpp>
 #include <sophus/sim3.hpp>
 
 typedef std::map<
