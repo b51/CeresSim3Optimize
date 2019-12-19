@@ -8,32 +8,31 @@
 #include <QPushButton>
 #include <QWidget>
 
-class Sphere;
-
-class SphereScene;
+#include "QtScene.h"
+#include "Sim3Optimizer.h"
 
 class MainWidget : public QWidget {
   Q_OBJECT
-public:
-  explicit MainWidget(QWidget *parent = 0);
+ public:
+  explicit MainWidget(QWidget* parent = 0);
 
-signals:
+ signals:
 
-public slots:
+ public slots:
   void btnInit();
   void btnOptimize();
 
-private:
-  SphereScene *sphereScene;
-  QLineEdit *IterSetEdit;
-  QPushButton *InitButton;
-  QPushButton *optButton;
+ private:
+  QtScene* qt_scene_;
+  QLineEdit* IterSetEdit;
+  QPushButton* InitButton;
+  QPushButton* optButton;
 
-private:
+ private:
   bool isInit;
 
-private:
-  std::shared_ptr<Sphere> sphere;
+ private:
+  std::shared_ptr<Sim3Optimizer> optimizer_;
 };
 
-#endif // MAINWIDGET_H
+#endif  // MAINWIDGET_H

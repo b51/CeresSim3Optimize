@@ -4,7 +4,7 @@
 #include <Eigen/Sparse>
 #include <ceres/ceres.h>
 
-#include "Sphere.h"
+#include "Sim3Optimizer.h"
 
 class PoseGraphError : public ceres::SizedCostFunction<7, 7, 7> {
 public:
@@ -69,7 +69,7 @@ private:
   Eigen::Matrix<double, 7, 7> sqrt_information_;
 };
 
-Sphere::Sphere() {}
+Sim3Optimizer::Sim3Optimizer() {}
 
 class CERES_EXPORT Sim3Parameterization : public ceres::LocalParameterization {
 public:
@@ -98,7 +98,7 @@ bool Sim3Parameterization::ComputeJacobian(const double *x,
   return true;
 }
 
-bool Sphere::optimize(int iter_) {
+bool Sim3Optimizer::optimize(int iter_) {
   if (vertexes.empty() == true || edges.empty() == true)
     return false;
 

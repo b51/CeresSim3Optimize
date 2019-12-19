@@ -5,25 +5,6 @@
 #include <sophus/se3.hpp>
 #include <sophus/sim3.hpp>
 
-struct Vertex {
-  int index;
-  Eigen::Matrix<double, 6, 1> pose;
-};
-
-struct Edge {
-  int i;
-  int j;
-  Sophus::SE3d pose;
-  Eigen::Matrix<double, 6, 6> information;
-};
-
-/*
-struct Sim3Vertex
-{
-    int                         index;
-    Eigen::Matrix<double, 7, 1> pose;
-};
-*/
 typedef std::map<
     int, Eigen::Matrix<double, 7, 1>, std::less<int>,
     Eigen::aligned_allocator<std::pair<const int, Eigen::Matrix<double, 7, 1>>>>

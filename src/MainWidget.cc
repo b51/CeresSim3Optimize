@@ -7,8 +7,8 @@
 #include <QRegExpValidator>
 
 #include "MainWidget.h"
-#include "Sphere.h"
-#include "sphereScene.h"
+#include "Sim3Optimizer.h"
+#include "QtScene.h"
 
 void getVertex(char *ptr, Sim3Vertex &vertex) {
   ptr += 17;
@@ -57,7 +57,7 @@ void getEdge(char *ptr, Sim3Edge &edge) {
 MainWidget::MainWidget(QWidget *parent) : QWidget(parent) {
   QGridLayout *mainLayout = new QGridLayout;
 
-  sphereScene = new SphereScene;
+  qt_scene_ = new QtScene;
   IterSetEdit = new QLineEdit;
   InitButton = new QPushButton;
   optButton = new QPushButton;
@@ -72,7 +72,7 @@ MainWidget::MainWidget(QWidget *parent) : QWidget(parent) {
   optButton->setText("optimize");
   optButton->setDisabled(false);
 
-  mainLayout->addWidget(sphereScene, 0, 0, 3, 3);
+  mainLayout->addWidget(qt_scene_, 0, 0, 3, 3);
   mainLayout->addWidget(IterSetEdit, 3, 0, 1, 1);
   mainLayout->addWidget(InitButton, 3, 1, 1, 1);
   mainLayout->addWidget(optButton, 3, 2, 1, 1);
@@ -83,8 +83,8 @@ MainWidget::MainWidget(QWidget *parent) : QWidget(parent) {
   connect(InitButton, SIGNAL(clicked()), this, SLOT(btnInit()));
 
   isInit = false;
-  sphere.reset(new Sphere);
-  sphereScene->setSphere(sphere);
+  optimizer_.reset(new Sim3Optimizer);
+  qt_scene_->setSphere(optimizer_);
 }
 
 void MainWidget::btnInit() {
@@ -110,18 +110,18 @@ void MainWidget::btnInit() {
     if ((ptr = strstr(buffer, edgeSign)) != NULL) {
       Sim3Edge edge;
       getEdge(ptr, edge);
-      sphere->pushEdge(edge);
+      optimizer_->pushEdge(edge);
     }
 
     memset(buffer, 0, 512);
     f.getline(buffer, 512);
   }
-  sphere->setVertexes(vertexes);
+  optimizer_->setVertexes(vertexes);
 
   free(buffer);
 
   isInit = true;
-  sphereScene->isInit = true;
+  qt_scene_->isInit = true;
   optButton->setEnabled(true);
   update();
 }
@@ -132,7 +132,7 @@ void MainWidget::btnOptimize() {
   QString Striter = IterSetEdit->text();
   if (Striter.size())
     iter = atoi(Striter.toLatin1().data());
-  sphere->optimize(iter);
+  optimizer_->optimize(iter);
   update();
   optButton->setDisabled(true);
 }

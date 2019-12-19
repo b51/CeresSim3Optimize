@@ -24,7 +24,7 @@ find_package(Eigen3 REQUIRED)
 find_package(OpenGL REQUIRED)
 
 if(Qt5_FOUND)
-    QT5_WRAP_CPP(UI_SOURCES include/sphereScene.h include/MainWidget.h)
+    QT5_WRAP_CPP(UI_SOURCES include/QtScene.h include/MainWidget.h)
     INCLUDE_DIRECTORIES(${Qt5Core_INCLUDE_DIRS} ${Qt5Xml_INCLUDE_DIRS} ${Qt5Gui_INCLUDE_DIRS} ${Qt5Widgets_INCLUDE_DIRS} ${Qt5OpenGL_INCLUDE_DIRS})
     SET(MY_QT_LIBRARIES ${Qt5Widgets_LIBRARIES} ${Qt5Core_LIBRARIES} ${Qt5Gui_LIBRARIES} ${Qt5Xml_LIBRARIES} ${Qt5OpenGL_LIBRARIES})
 endif()
@@ -41,10 +41,10 @@ include_directories(
 )
 
 set(SOURCE_FILES
-  src/sphereScene.cpp
-  src/main.cpp
-  src/MainWidget.cpp
-  src/Sphere.cpp
+  src/QtScene.cc
+  src/MainWidget.cc
+  src/Sim3Optimizer.cc
+  src/main.cc
 )
 
 add_executable(${PROJECT_NAME}

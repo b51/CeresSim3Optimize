@@ -6,9 +6,9 @@
 
 #include "DataStruct.h"
 
-class Sphere {
+class Sim3Optimizer {
 public:
-  Sphere();
+  Sim3Optimizer();
   // void pushVertex(Sim3Vertex &vertex) {
   //     vertexes.push_back(vertex);
   // }
