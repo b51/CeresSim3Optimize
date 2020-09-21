@@ -45,7 +45,7 @@ $\hspace{4cm}\mathbf{ = \xi_1 + \xi_2 + \frac{1}{2} \xi_1^{\lambda} \xi_2 + \fra
 
 $\hspace{4cm}\mathbf{\approx J_l(\xi_2)^{-1}\xi_1 + \xi_2}\hspace{2cm}$ (if $\xi_1 small$)
 
-$\hspace{4cm}\mathbf{\approx \xi_2 + J_r(\xi_1)^{-1}\xi_2}\hspace{2cm}$ (if $\xi_2 small$)
+$\hspace{4cm}\mathbf{\approx \xi_1 + J_r(\xi_1)^{-1}\xi_2}\hspace{2cm}$ (if $\xi_2 small$)
 
 With
 $\hspace{3cm}\mathbf{J_l(\xi)^{-1} = \sum_{n = 0}^{\infty} \frac{B_n}{n!} (\xi^{\lambda})^{n}}$
